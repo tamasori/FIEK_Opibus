@@ -1,0 +1,1 @@
+<p>Hello bello malla de le cocca nostra&nbsp;{{ $user-&gt;name }}</p>

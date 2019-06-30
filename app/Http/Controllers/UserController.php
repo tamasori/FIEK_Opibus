@@ -215,6 +215,13 @@ class UserController extends Controller
          $user->can_access = json_encode($access_array, JSON_UNESCAPED_UNICODE);
 
          $user->save();
+
+         Notifications::create([
+            'message' => "A fiokját frissítették!",
+            'user_id' => $user->id,
+            'opened' => 0
+        ]);
+
          return Redirect::To("/felhasznalok")->with("success", "Sikeres mentés!");
     }
 
@@ -241,6 +248,7 @@ class UserController extends Controller
         $user->can_access = $group->can_access;
         $user->accepted = 1;
         $user->save();
+        Mail::to($user->email)->send(new UserAcceptedToUser($user->id));
         return Redirect::to("/felhasznalok")->with("success","Sikeres aktiválás.");  
     }
 }

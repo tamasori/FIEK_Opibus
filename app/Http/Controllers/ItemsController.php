@@ -15,6 +15,7 @@ use Items;
 use Auth;
 use Labs;
 use User;
+use Notifications;
 
 class ItemsController extends Controller
 {
@@ -81,7 +82,14 @@ class ItemsController extends Controller
             'rules' => json_encode($items, JSON_UNESCAPED_UNICODE),
             'remote_access' => Input::get('remote_access', 0)
         ));
-
+        $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"items"%\'')->get();
+            foreach ($u_n as $u) {
+                Notifications::create([
+                    'message' => "Új eszköz került felvitelre: " . Input::get('name') . "(" . Auth::User()->name . ")",
+                    'user_id' => $u->id,
+                    'opened' => 0
+                ]);
+            }
         return Redirect::To('/eszkozok')->with('success', 'Sikeres létrehozás!');
     }
 

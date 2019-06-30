@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserAcceptedToUser;
 use App\Http\Controllers\Controller;
 use Groups;
 use Redirect;

@@ -1,0 +1,2 @@
+<p><code>{{ $user->name }} : A felhaszn&aacute;l&oacute; teljes neve</code><code>{{ $user->email }} : A felhaszn&aacute;l&oacute; email c&iacute;me</code><code>{{ $user->github }} : A felhaszn&aacute;l&oacute; github felhaszn&aacute;l&oacute;neve</code><code>{{ $user->phone_number }} : A felhaszn&aacute;l&oacute; github felhaszn&aacute;l&oacute;neve</code><code>{{ $user->created_at }} : A felhaszn&aacute;l&oacute; l&eacute;trehoz&aacute;s&aacute;nak d&aacute;tuma</code><br />
+<code>{{ $resetlink }} : Link a jelsz&oacute; megv&aacute;ltoztat&aacute;s&aacute;hoz</code></p>

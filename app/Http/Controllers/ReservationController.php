@@ -11,6 +11,11 @@ use Validator;
 use Input;
 use Errors;
 use Overwatch;
+use Notifications;
+use User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ReservationAcceptedToUser;
+use App\Mail\ReservationRefusedToUser;
 
 class ReservationController extends Controller
 {
@@ -28,6 +33,13 @@ class ReservationController extends Controller
             if($this->canReserve($r->from_date,$r->to_date, $r->item_id)["reserve"]){    
                 $r->accepted = 1;
                 $r->save();
+                Notifications::create([
+                    'message' => "Foglalásodat elfogadták: " . Items::find($r->item_id)->name . "(" . $r->from_date . "-" . $r->to_date . ")",
+                    'user_id' => $r->user_id,
+                    'opened' => 0
+                ]);
+                $u = User::find($r->user_id);
+                Mail::to($u->email)->send(new ReservationAcceptedToUser($u->id));
             }
         }
         
@@ -40,7 +52,13 @@ class ReservationController extends Controller
         $r->accepted = 1;
         $r->save();
         $res = Reservation::where("to_date",">=", \DB::raw('NOW()'))->orderBy("created_at", "DESC")->get();
-
+        Notifications::create([
+            'message' => "Foglalásodat elfogadták: " . Items::find($r->item_id)->name . "(" . $r->from_date . "-" . $r->to_date . ")",
+            'user_id' => $r->user_id,
+            'opened' => 0
+        ]);
+        $u = User::find($r->user_id);
+        Mail::to($u->email)->send(new ReservationAcceptedToUser($u->id));
         
         
         return view("reservations.index")->with("reservations", $res);
@@ -177,6 +195,14 @@ class ReservationController extends Controller
                                 'item_id' => $id,
                                 'accepted' => "0"
                             ));
+                            $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"reservations"%\'')->get();
+                                foreach ($u_n as $u) {
+                                    Notifications::create([
+                                        'message' => "Új foglalási kérelem: " . Items::find($id)->name . "(" . Auth::User()->name . ")",
+                                        'user_id' => $u->id,
+                                        'opened' => 0
+                                    ]);
+                                }
                         }
                     }
                 }
@@ -201,6 +227,14 @@ class ReservationController extends Controller
                             'item_id' => $id,
                             'accepted' => "0"
                         ));
+                        $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"reservations"%\'')->get();
+                            foreach ($u_n as $u) {
+                                Notifications::create([
+                                    'message' => "Új foglalási kérelem: " . Items::find($id)->name . "(" . Auth::User()->name . ")",
+                                    'user_id' => $u->id,
+                                    'opened' => 0
+                                ]);
+                            }
                     }
                 }
                 else{
@@ -225,6 +259,14 @@ class ReservationController extends Controller
                                 'item_id' => $id,
                                 'accepted' => "0"
                             ));
+                            $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"reservations"%\'')->get();
+                                foreach ($u_n as $u) {
+                                    Notifications::create([
+                                        'message' => "Új foglalási kérelem: " . Items::find($id)->name . "(" . Auth::User()->name . ")",
+                                        'user_id' => $u->id,
+                                        'opened' => 0
+                                    ]);
+                                }
                         }
                     }
                 }
@@ -257,7 +299,15 @@ class ReservationController extends Controller
     public function destroy($id)
     {
         $r = Reservation::find($id);
+        
         if($r != null){
+            Notifications::create([
+                'message' => "Foglalásodat elutasították: " . Items::find($r->item_id)->name . "(" . $r->from_date . "-" . $r->to_date . ")",
+                'user_id' => $r->user_id,
+                'opened' => 0
+            ]);
+            $u = User::find($r->user_id);
+            Mail::to($u->email)->send(new ReservationRefusedToUser($u->id));
             if($r->user_id == Auth::User()->id){
                 Reservation::find($id)->delete();
                 if(Auth::User()->CanAccessMenu("rent")){

@@ -10,6 +10,8 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ItemErrorSubmittedToAdmin;
 
 Route::get('/kijelentkezes', function () {
     if($user = Auth::user())
@@ -18,6 +20,9 @@ Route::get('/kijelentkezes', function () {
     }
     return Redirect::to("/belepes");
 });
+
+Route::get('/elfelejtett-jelszo/{code?}', "ResetCodeController@index");
+Route::post('/elfelejtett-jelszo', "ResetCodeController@store");
 
 Route::get('/testing', function () {
     return view("test");
@@ -51,13 +56,23 @@ Route::post('/', function () {
                     ->withErrors($validator) 
                     ->withInput();
             } else {
-                Errors::create(array(
+                $error = Errors::create(array(
                     'user_id' => Auth::User()->id,
                     'item_id' => Input::get("item_id"),
                     'description' => Input::get("description"),
                     'status' => "published",
                     'worker_id' => "-1"
                 ));
+                $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"errors"%\'')->get();
+                    foreach ($u_n as $u) {
+                        Notifications::create([
+                            'message' => "Új hibabejelentés: " . Items::find(Input::get('item_id'))->name . "(" . Auth::User()->name . ")",
+                            'user_id' => $u->id,
+                            'opened' => 0
+                        ]);
+        
+                        Mail::to($u->email)->send(new ItemErrorSubmittedToAdmin(Auth::User()->id,$error->id,Input::get('item_id'),Labs::find(Items::find(Input::get('item_id'))->lab_id)->id,$u->id));
+                    }
                 return Redirect::to('/')
                     ->with("success","Sikeres bejelentés!");
             }

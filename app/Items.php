@@ -36,7 +36,8 @@ class Items extends Model
                 $string .= "Nincs felügyelő, ";
             }
             else{   
-                $string .= User::find($value)->name . ", ";
+                if(User::find($value))
+                    $string .= User::find($value)->name . ", ";
             }
         }
 

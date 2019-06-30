@@ -25,7 +25,6 @@ class EmailTextController extends Controller
      */
     public function index()
     {
-        
         return view("emailTexts.index");
     }
 
@@ -63,6 +62,10 @@ class EmailTextController extends Controller
             $EmailText->message = Input::get("text");
             $EmailText->save();
 
+            $templateFile = fopen(resource_path("views/emailTemplates/" . $EmailText->command_name . ".blade.php"), "w");
+            fwrite($templateFile,str_replace("&gt;",">",$EmailText->message)  );
+            fclose($templateFile);
+
             return Redirect::To('/email-szovegek')->with('success', 'Sikeres szerkesztés!');
         }
         else{
@@ -88,20 +91,5 @@ class EmailTextController extends Controller
         }
     }
 
-    
-  public function bladeCompile($value, array $args = array())
-    {
-        $generated = \Blade::compileString($value);
-        ob_start() and extract($args, EXTR_SKIP);
-        try
-        {
-            eval('?>'.$generated);
-        }
-        catch (\Exception $e)
-        {
-            ob_get_clean(); throw $e;
-        }
-        $content = ob_get_clean();
-        return $content;
-    }   
+ 
 }

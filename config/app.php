@@ -240,6 +240,7 @@ return [
         'Overwatch' => App\Overwatch::class,
         'BaseModel' => App\BaseModel::class,
         'Reservation' => App\Reservation::class,
+        'ResetCode' => App\ResetCode::class,
 
     ],
 

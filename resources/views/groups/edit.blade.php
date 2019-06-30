@@ -61,6 +61,8 @@
                     </div>
                     <hr />
                     <div id="items">
+                    <div style="max-height: 300px; overflow:scroll;" >
+
                     @foreach(Items::all() as $item)
                     <div class="form-group">
                       <div class="custom-control custom-checkbox small">
@@ -70,6 +72,7 @@
                     </div>
                     @endforeach
                   </div>
+                </div>
                     <input type="submit" class="btn btn-primary btn-user btn-block" value="Mentés">
                     </form>
 

@@ -64,6 +64,7 @@
 
                     <div class="form-group">
                     <h3>Ha lefoglalják, akkor ezek is elérhetetlenek lesznek:</h3>
+                    <div style="max-height: 300px; overflow:scroll;" >
                     @foreach(Items::all()->except($current_item->id) as $item)
                     <div class="form-group">
                       <div class="custom-control custom-checkbox small">
@@ -73,6 +74,7 @@
                     </div>
                     @endforeach
                     </div>
+                  </div>
 
                     <input type="submit" class="btn btn-primary btn-user btn-block" value="Mentés">
                     </form>

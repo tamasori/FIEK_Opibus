@@ -8,7 +8,11 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Auth;
 use Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreatedToAdmin;
+use App\Mail\UserCreatedToUser;
 Use App\User;
+use Notifications;
 
 class RegistrationController extends Controller
 {
@@ -67,7 +71,7 @@ class RegistrationController extends Controller
                 ->withInput( \Illuminate\Support\Facades\Input::except('password'));
         }*/
 
-        \App\User::create(array(
+        $usr = \App\User::create(array(
             'name'     => \Illuminate\Support\Facades\Input::get("name"),
             'email'    => \Illuminate\Support\Facades\Input::get("email"),
             'accepted'    => '0',
@@ -77,6 +81,17 @@ class RegistrationController extends Controller
     
             'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Facades\Input::get("password")),
         ));
+
+        $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"users"%\'')->get();
+        foreach ($u_n as $u) {
+            Notifications::create([
+                'message' => "Új felhasználó regisztrált: " . \Illuminate\Support\Facades\Input::get("name") . "(" . \Illuminate\Support\Facades\Input::get("github") . ")",
+                'user_id' => $u->id,
+                'opened' => 0
+            ]);
+            Mail::to($u->email)->send(new UserCreatedToAdmin($usr->id,$u->id));
+        }
+        Mail::to($usr->email)->send(new UserCreatedToUser($usr->id));
 
         return \Illuminate\Support\Facades\Redirect::to("/sikeres-regisztracio");
     }

@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::listen('eloquent.updating: *', function ($event, $model) {
-            if(!property_exists($model[0], "NoLog")){
+            if(!property_exists($model[0], "NoLog") && Auth::check()){
 
                 $new = $model[0];
                 $old_data = $model[0]->getOriginal();

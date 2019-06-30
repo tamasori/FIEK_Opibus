@@ -105,12 +105,7 @@ class LabsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $not = new Notifications([
-            'message' => "Teszt notification",
-            'user_id' => Auth::User()->id,
-            'opened' => 0
-        ]);
-        $not->save();
+        
 
         $rules = array(
             'name' => 'required',

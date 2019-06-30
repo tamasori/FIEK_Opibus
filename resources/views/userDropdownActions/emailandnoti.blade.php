@@ -54,7 +54,7 @@
                     @foreach(Messages::where("user_id","=", Auth::User()->id)->orderBy("created_at","DESC")->get() as $message)
                     <tr>
                       <td>{{$message->created_at}}</td>
-                      <td>{{$message->message}}</td>
+                      <td>{!! $message->message !!}</td>
                     </tr>
                         
                     @endforeach

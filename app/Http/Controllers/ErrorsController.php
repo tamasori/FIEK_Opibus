@@ -19,6 +19,9 @@ use Validator;
 use Texts;
 use Config;
 use Errors;
+use Mail;
+use Labs;
+use App\Mail\ItemErrorSubmittedToAdmin;;
 
 class ErrorsController extends Controller
 {
@@ -71,13 +74,25 @@ class ErrorsController extends Controller
                 ->withInput();
         }
 
-        Errors::create(array(
+        $error = Errors::create(array(
             'item_id' => Input::get('item_id'),
             'user_id' => Auth::User()->id,
             'worker_id' => Input::get('worker_id'),
             'description' => Input::get('description'),
             'status' => Input::get('status')
         ));
+
+        $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"errors"%\'')->get();
+            foreach ($u_n as $u) {
+                Notifications::create([
+                    'message' => "Új hibabejelentés: " . Items::find(Input::get('item_id'))->name . "(" . Auth::User()->name . ")",
+                    'user_id' => $u->id,
+                    'opened' => 0
+                ]);
+
+                Mail::to($u->email)->send(new ItemErrorSubmittedToAdmin(Auth::User()->id,$error->id,Input::get('item_id'),Labs::find(Items::find(Input::get('item_id'))->lab_id)->id,$u->id));
+            }
+
         return Redirect::To('/hiba-bejelentesek')->with('success', 'Sikeres létrehozás!');
     }
 
@@ -141,6 +156,23 @@ class ErrorsController extends Controller
         $error->description = Input::get('description');
         $error->status = Input::get('status');
         $error->save();
+
+        $u_n = User::whereRaw('can_access LIKE \'%{"menus":["all"]%\' OR can_access LIKE \'%"errors"%\'')->get();
+            foreach ($u_n as $u) {
+                Notifications::create([
+                    'message' => "Hibabejelentés frissült: " . Items::find(Input::get('item_id'))->name . "(" . Auth::User()->name . ")",
+                    'user_id' => $u->id,
+                    'opened' => 0
+                ]);
+            }
+        if($error->status == "archive"){
+            Notifications::create([
+                'message' => "Az Ön által bejelentett hibát javítottuk: " . Items::find(Input::get('item_id'))->name,
+                'user_id' => $error->user_id,
+                'opened' => 0
+            ]);
+        }
+
         return Redirect::To('/hiba-bejelentesek')->with('success', 'Sikeres szerkesztés!');
     }
 

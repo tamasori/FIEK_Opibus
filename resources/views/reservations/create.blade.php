@@ -117,7 +117,7 @@
                             $("#item_select").val(0);
                             $("#item_select").trigger("change");
                             
-                            $.getJSON('http://localhost/get/item/' + selected , function(data) {
+                            $.getJSON('/get/item/' + selected , function(data) {
                                 console.log(data);
                                 $('#item_list').prepend(template.split("[[ID]]").join(data[0].id).split("[[NAME]]").join(data[0].name).split("[[DESC]]").join(data[0].description).split("[[YOUTUBE]]").join(data[0].youtube_link));
                                 
@@ -131,21 +131,21 @@
                                 $.datepicker.regional[ "hu" ];
                                 $.datetimepicker.setDateFormatter('moment');
                                 
-                                new_item.find("#from_date, #to_date").datepicker({minDate:0});
-                                new_item.find("#from_time").datetimepicker({
+                                new_item.find("#from_date-"+selected+", #to_date-"+selected).datepicker({minDate:0});
+                                new_item.find("#from_time-"+selected).datetimepicker({
                                     datepicker:false, 
                                     format:"HH:mm", 
                                     step: 15,
                                     onSelectTime: function(ct, i){
-                                        new_item.find("#to_time").datetimepicker({datepicker:false, format:"HH:mm", step: 15, minTime: i.val()});
+                                        new_item.find("#to_time-"+selected).datetimepicker({datepicker:false, format:"HH:mm", step: 15, minTime: i.val()});
 
                                     }
                                 });
 
-                                new_item.find("#to_time").datetimepicker({datepicker:false, format:"HH:mm", step: 15});
+                                new_item.find("#to_time-"+selected).datetimepicker({datepicker:false, format:"HH:mm", step: 15});
 
-                                new_item.find("#from_date").on("change", function(){
-                                    new_item.find("#to_date").datepicker('option', 'minDate',  new_item.find("#from_date").datepicker("getDate"));
+                                new_item.find("#from_date-"+selected).on("change", function(){
+                                    new_item.find("#to_date-"+selected).datepicker('option', 'minDate',  new_item.find("#from_date-"+selected).datepicker("getDate"));
                                 }); 
                             });
 
@@ -161,6 +161,44 @@
                                 $("#item_selected-"+ selected).remove();
                         }
 
+                        function expandData(elm){
+                            var selected = elm.getAttribute("parent-id");
+                            $('select[name^="type_select"]').each(function() {
+                                $(this).val( $('select[name="type_select['+ selected +']"]').val() );
+                                switch_view($(this));
+                            });
+                            $('input[name^="from_date"]').each(function() {
+                                $(this).val( $('input[name="from_date['+ selected +']"]').val() );
+                            });
+                            $('input[name^="to_date"]').each(function() {
+                                $(this).val( $('input[name="to_date['+ selected +']"]').val() );
+                            });
+                            $('input[name^="from_time"]').each(function() {
+                                $(this).val( $('input[name="from_time['+ selected +']"]').val() );
+                            });
+                            $('input[name^="to_time"]').each(function() {
+                                $(this).val( $('input[name="to_time['+ selected +']"]').val() );
+                            });
+                            $('input[name^="weeks"]').each(function() {
+                                $(this).val( $('input[name="weeks['+ selected +']"]').val() );
+                            });
+                            for (var index = 0; index < 7; index++) {
+                                
+                                if ($('input[name="weekday-'+index+'['+selected+']"]').is(':checked')) {
+                                    
+                                    $('input[name^="weekday-'+index+'"]').each(function() {
+                                        $(this).prop('checked', true);
+                                    });
+                                }
+                                else{
+                                    $('input[name^="weekday-'+index+'"]').each(function() {
+                                        $(this).prop('checked', false);
+                                    });
+                                }
+                            }
+                            
+                        }
+
                         $("#check_button").on("click", function(){
                              $.post("/get/check", $("#item_list").serialize(), function(data) {
                                  console.log(data);
@@ -169,7 +207,7 @@
                                      var err = "";
                                      console.log(val);
                                      if(val.length == 0) {
-                                         err += "<span class='text-success'>Minen dátum foglalható.</span>";
+                                         err += "<span class='text-success'>Minden dátum foglalható.</span>";
                                      }
                                      else{
                                         $.each(val, function(k, v){
